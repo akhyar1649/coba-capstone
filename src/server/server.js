@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const host = "localhost";
+const host = "0.0.0.0";
 const port = 3000;
 
 // Import the Firebase configuration
