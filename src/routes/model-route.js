@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { getVersion, getFile } = require("../handlers/model-handler.js");
 
-router.post("/version", getVersion);
-router.post("/file", getFile);
+router.get("/version", getVersion);
+router.get("/file", getFile);
 
 module.exports = router;
