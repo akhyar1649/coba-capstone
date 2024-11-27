@@ -25,7 +25,7 @@ async function getVersion(req, res) {
       return res.status(404).json({ message: "File metadata not found" });
     }
 
-    const generation = metadata.metadata?.generation || "unknown";
+    const generation = metadata.generation || "unknown";
     res.status(200).json({
       message: "File version retrieved successfully",
       generation,
