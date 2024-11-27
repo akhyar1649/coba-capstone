@@ -28,6 +28,7 @@ async function getVersion(req, res) {
     const version = metadata.metadata?.version || "unknown";
     res.status(200).json({
       message: "File version retrieved successfully",
+      metadata,
       version,
     });
   } catch (error) {
