@@ -1,0 +1,67 @@
+const storage = require("../config/storage.js");
+require("dotenv").config();
+
+const bucketName = process.env.GCS_BUCKET_NAME; // Nama bucket dari environment variable
+const fileName = process.env.GCS_MODEL_NAME;
+
+// Function to get file metadata for version retrieval
+async function getFileMetadata() {
+  try {
+    const file = storage.bucket(bucketName).file(fileName);
+    const [metadata] = await file.getMetadata();
+    return metadata;
+  } catch (error) {
+    console.error("Error retrieving file metadata:", error);
+    return null;
+  }
+}
+
+// Route to get the version of the file
+async function getVersion(req, res) {
+  try {
+    const metadata = await getFileMetadata();
+    if (!metadata) {
+      return res.status(404).json({ message: "File metadata not found" });
+    }
+
+    const version = metadata.metadata?.version || "unknown";
+    res.status(200).json({
+      message: "File version retrieved successfully",
+      version,
+    });
+  } catch (error) {
+    console.error("Error retrieving file version:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Route to download the file
+async function getFile(req, res) {
+  try {
+    const file = storage.bucket(bucketName).file(fileName);
+    const exists = await file.exists();
+
+    if (!exists[0]) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const tempFilePath = path.join(__dirname, "../../temp", fileName);
+
+    await file.download({ destination: tempFilePath });
+
+    res.download(tempFilePath, fileName, (err) => {
+      if (err) {
+        console.error("Error during file download:", err);
+        return res.status(500).json({ message: "Error downloading file" });
+      }
+    });
+  } catch (err) {
+    console.error("Error in file download route:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+module.exports = {
+  getFile,
+  getVersion,
+};
