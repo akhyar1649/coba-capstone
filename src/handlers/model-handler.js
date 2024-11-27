@@ -46,7 +46,7 @@ async function getFile(req, res) {
       return res.status(404).json({ message: "File not found" });
     }
 
-    const tempFilePath = path.join(__dirname, "../temp", fileName);
+    const tempFilePath = path.join(__dirname, "../../temp", fileName);
 
     await file.download({ destination: tempFilePath });
 
