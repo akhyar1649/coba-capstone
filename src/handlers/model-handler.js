@@ -1,4 +1,5 @@
 const storage = require("../config/storage.js");
+const path = require('path');
 require("dotenv").config();
 
 const bucketName = process.env.GCS_BUCKET_NAME; // Nama bucket dari environment variable
