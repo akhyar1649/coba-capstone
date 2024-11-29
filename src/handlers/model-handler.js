@@ -6,7 +6,7 @@ const bucketName = process.env.GCS_BUCKET_NAME; // Nama bucket dari environment 
 const fileName = process.env.GCS_MODEL_NAME;
 
 // Function to get file metadata for version retrieval
-async function getFileMetadata() {
+async function getFileMetadata(fileName) {
   try {
     const file = storage.bucket(bucketName).file(fileName);
     const [metadata] = await file.getMetadata();
