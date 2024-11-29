@@ -64,7 +64,7 @@ async function getFile(req, res) {
 
 const getFiles = (fileName) => bucket.file(fileName);
 
-const downloadModel = async (req, res) => {
+async function downloadModel (req, res) {
   const { fileName } = req.params;
   try {
     const fileExists = await getFileMetadata(fileName);
