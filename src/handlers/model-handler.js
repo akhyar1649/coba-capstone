@@ -62,7 +62,7 @@ async function getFile(req, res) {
   }
 }
 
-const getFiles = (fileName) => bucket.file(fileName);
+const getFiles = (fileName) => storage.bucket(bucketName).file(fileName);
 
 async function downloadModel (req, res) {
   const { fileName } = req.params;
