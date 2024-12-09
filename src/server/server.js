@@ -2,23 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const authRoute = require("../routes/auth-route.js");
 const modelRoute = require("../routes/model-route.js");
-require('dotenv').config();
+const db = require("../services/firebase.js");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const host = "0.0.0.0";
+const host = process.env.NODE_ENV !== 'production' ? 'localhost': '0.0.0.0';
 const port = 3000;
-
-// Import the Firebase configuration
-const db = require("../config/firebase.js");
 
 app.use("/auth", authRoute);
 app.use("/model", modelRoute);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Rest API for SleepWell Capstone Project - Bangkit 2024");
 });
 
 app.listen(port, () => {
