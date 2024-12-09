@@ -1,7 +1,6 @@
 const { getFileMetadata, getFile } = require("../services/storage.js");
 require("dotenv").config();
 
-const bucketName = process.env.GCS_BUCKET_NAME;
 const fileName = process.env.GCS_MODEL_NAME;
 
 // Route to get the version of the file
@@ -24,7 +23,7 @@ async function getVersion(req, res) {
 }
 
 // Route to download the file
-async function getFile(req, res) {
+async function getFileMe(req, res) {
   try {
     const file = getFile(fileName);
     const exists = await file.exists();
@@ -69,7 +68,7 @@ async function downloadModel (req, res) {
 };
 
 module.exports = {
-  getFile,
+  getFileMe,
   getVersion,
   downloadModel,
 };
