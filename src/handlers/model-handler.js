@@ -4,18 +4,6 @@ require("dotenv").config();
 const bucketName = process.env.GCS_BUCKET_NAME;
 const fileName = process.env.GCS_MODEL_NAME;
 
-// Function to get file metadata for version retrieval
-async function getFileMetadata(fileName) {
-  try {
-    const file = getFile(fileName);
-    const [metadata] = await file.getMetadata();
-    return metadata;
-  } catch (error) {
-    console.error("Error retrieving file metadata:", error);
-    return null;
-  }
-}
-
 // Route to get the version of the file
 async function getVersion(req, res) {
   try {
