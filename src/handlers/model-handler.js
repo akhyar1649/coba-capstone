@@ -1,14 +1,13 @@
-const storage = require("../config/storage.js");
-const path = require("path");
+const { getFileMetadata, getFile } = require("../services/storage.js");
 require("dotenv").config();
 
-const bucketName = process.env.GCS_BUCKET_NAME; // Nama bucket dari environment variable
+const bucketName = process.env.GCS_BUCKET_NAME;
 const fileName = process.env.GCS_MODEL_NAME;
 
 // Function to get file metadata for version retrieval
 async function getFileMetadata(fileName) {
   try {
-    const file = storage.bucket(bucketName).file(fileName);
+    const file = getFile(fileName);
     const [metadata] = await file.getMetadata();
     return metadata;
   } catch (error) {
@@ -39,7 +38,7 @@ async function getVersion(req, res) {
 // Route to download the file
 async function getFile(req, res) {
   try {
-    const file = storage.bucket(bucketName).file(fileName);
+    const file = getFile(fileName);
     const exists = await file.exists();
 
     if (!exists[0]) {
@@ -62,9 +61,6 @@ async function getFile(req, res) {
   }
 }
 
-//
-const getFiles = (fileName) => storage.bucket(bucketName).file(fileName);
-
 async function downloadModel (req, res) {
   const { fileName } = req.params;
   try {
@@ -73,7 +69,7 @@ async function downloadModel (req, res) {
       return res.status(404).send({ message: "File not found" });
     }
 
-    const file = getFiles(fileName);
+    const file = getFile(fileName);
     const downloadStream = file.createReadStream();
 
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
