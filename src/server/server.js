@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const host = process.env.NODE_ENV !== 'production' ? 'localhost': '0.0.0.0';
-const port = 3000;
+const port = 4000;
 
 app.use("/auth", authRoute);
 app.use("/model", modelRoute);
