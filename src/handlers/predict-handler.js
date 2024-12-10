@@ -19,36 +19,71 @@ const loadModel = async (path) => {
 
 // Fungsi untuk menangani prediksi
 const predictForm = async (req, res) => {
-  const { input } = req.body;
-
-  if (!Array.isArray(input) || input[0].length !== 9) {
-    return res.status(400).json({
-      error: "Input must be an array of arrays with 9 features each.",
-    });
-  }
-
   try {
     await loadModel(process.env.MODEL_FORM);
     if (!model) {
-      return res
-        .status(500)
-        .json({ error: "Model not loaded yet. Please try again later." });
+      return res.status(500).json({ error: 'Model is not loaded yet' });
     }
 
-    // Konversi input menjadi tensor
-    const inputTensor = tf.tensor(input);
+    const {
+      gender,
+      age,
+      sleepDuration,
+      physicalActivityLevel,
+      stressLevel,
+      bmiCategory,
+      heartRate,
+      dailySteps,
+      sleepDisorder,
+    } = req.body;
 
-    // Lakukan prediksi
+    if (
+      gender === undefined ||
+      age === undefined ||
+      sleepDuration === undefined ||
+      physicalActivityLevel === undefined ||
+      stressLevel === undefined ||
+      bmiCategory === undefined ||
+      heartRate === undefined ||
+      dailySteps === undefined ||
+      sleepDisorder === undefined
+    ) {
+      return res.status(400).json({ error: 'Missing required input fields' });
+    }
+
+    // Preprocessing example: Map input to numerical values
+    const inputData = [
+      gender === 'Male' ? 1 : 0, // Map gender to numerical values
+      age,
+      sleepDuration,
+      physicalActivityLevel,
+      stressLevel,
+      bmiCategory === 'Normal Weight'
+        ? 0
+        : bmiCategory === 'Overweight'
+        ? 1
+        : 2, // Map BMI categories
+      heartRate,
+      dailySteps,
+      sleepDisorder === 'None'
+        ? 0
+        : sleepDisorder === 'Sleep Apnea'
+        ? 1
+        : 2, // Map sleep disorders
+    ];
+
+    // Predict using the model
+    const inputTensor = tf.tensor2d([inputData]);
     const prediction = model.predict(inputTensor);
+    const predictionArray = prediction.arraySync()[0];
 
-    // Ambil hasil sebagai array
-    const predictionArray = prediction.arraySync();
-
-    // Kirimkan respons
-    res.json({ prediction: predictionArray });
+    res.status(200).json({
+      prediction: predictionArray,
+      message: 'Prediction generated successfully',
+    });
   } catch (error) {
-    console.error("Error during prediction:", error);
-    res.status(500).json({ error: "Error during prediction" });
+    console.error('Error in prediction handler:', error);
+    res.status(500).json({ error: 'An error occurred during prediction' });
   }
 };
 
