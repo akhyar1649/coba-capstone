@@ -19,7 +19,7 @@ async function predictForm(req, res) {
     }
 
     // Konversi ke tensor
-    const inputTensor = tf.tensor2d([inputData]);
+    const inputTensor = tf.tensor([inputData], [1, inputData.length]);
 
     // Prediksi
     const prediction = model.predict(inputTensor);
