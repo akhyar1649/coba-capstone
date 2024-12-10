@@ -8,6 +8,7 @@ async function predictForm(req, res) {
     if (!model) {
       return res.status(500).send({ error: "Model belum dimuat" });
     }
+    console.log("Model loaded");
 
     // Ambil data input dari body request
     const { inputData } = req.body;
