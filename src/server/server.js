@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const tfnode = require('@tensorflow/tfjs-node');
 const authRoute = require("../routes/auth-route.js");
 const modelRoute = require("../routes/model-route.js");
 const predictRoute = require("../routes/predict-route.js");
