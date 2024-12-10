@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const tfnode = require('@tensorflow/tfjs-node');
 const authRoute = require("../routes/auth-route.js");
 const modelRoute = require("../routes/model-route.js");
 const predictRoute = require("../routes/predict-route.js");
@@ -15,13 +14,14 @@ const port = 4000;
 
 app.use("/auth", authRoute);
 app.use("/model", modelRoute);
-app.use("/predict", predictRoute);
+// app.use("/predict", predictRoute);
 
-let model;
-async function loadModel() {
-    model = await tfnode.loadLayersModel(process.env.MODEL_FORM);
-    console.log("Model Loaded!");
-}
+
+const tf = require('@tensorflow/tfjs');
+const model = await tf.loadLayersModel(process.env.MODEL_FORM);
+
+console.log(model.summary());
+
 
 app.get("/", (req, res) => {
   res.send("Rest API for SleepWell Capstone Project - Bangkit 2024");
@@ -29,5 +29,4 @@ app.get("/", (req, res) => {
 
 app.listen(port, () => {
   console.log(`Example app listening on port http://${host}:${port}`);
-  loadModel();
 });
