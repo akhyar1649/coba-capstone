@@ -67,7 +67,7 @@ const predictImage = async (req, res) => {
     // Decode image and resize
     const tensor = tf.node
       .decodeImage(imageBuffer)
-      .resizeBilinear([150, 150]) // Resize to match model input
+      .resizeNearestNeighbor([150, 150]) // Resize to match model input
       .toFloat()
       .div(255.0) // Normalize to [0, 1]
       .expandDims(0); // Add batch dimension
