@@ -1,27 +1,14 @@
 const preprocessInput = (inputData) => {
-  // Validasi input
-  const expectedFields = [
-    "Gender",
-    "Age",
-    "Sleep Duration",
-    "Physical Activity Level",
-    "Stress Level",
-    "BMI Category",
-    "Heart Rate",
-    "Daily Steps",
-    "Sleep Disorder",
-  ];
-
-  const missingFields = expectedFields.filter((field) => !(field in inputData));
-  if (missingFields.length > 0) {
-    console.error(`Missing fields: ${missingFields.join(", ")}`);
+  // Validasi jumlah fitur input
+  if (Object.keys(inputData).length !== 9) {
+    console.error("Invalid number of features. Expected 9.");
     return null;
   }
 
-  // Encode kategori
+  // Contoh encoding kategori jika diperlukan
   const categoryMapping = {
     Gender: { Male: 0, Female: 1 },
-    "BMI Category": { "Normal Weight": 0, Normal: 1, Overweight: 2, Obese: 3 },
+    "BMI Category": { "Normal": 0, "Overweight": 1, "Obese": 2 },
     "Sleep Disorder": { None: 0, "Sleep Apnea": 1, Insomnia: 2 },
   };
 
@@ -37,8 +24,8 @@ const preprocessInput = (inputData) => {
       inputData["Daily Steps"],
       categoryMapping["Sleep Disorder"][inputData["Sleep Disorder"]],
     ];
-  } catch (err) {
-    console.error("Error in preprocessing input:", err);
+  } catch (error) {
+    console.error("Error in input preprocessing:", error);
     return null;
   }
 };
