@@ -10,6 +10,7 @@ const loadModel = async (path) => {
   if (!model) {
     try {
       model = await tf.loadLayersModel(path);
+      model.build([null, 9]);
       console.log("Model loaded successfully");
     } catch (error) {
       console.error("Error loading model:", error);
@@ -29,6 +30,7 @@ const predictForm = async (req, res) => {
 
   try {
     await loadModel(process.env.MODEL_FORM);
+    
     if (!model) {
       return res
         .status(500)
@@ -36,13 +38,13 @@ const predictForm = async (req, res) => {
     }
 
     // Konversi input menjadi tensor
-    const inputTensor = tf.tensor(input);
+    const inputTensor = tf.tensor2d(input, [input.length, 9]);
 
     // Lakukan prediksi
     const prediction = model.predict(inputTensor);
 
     // Ambil hasil sebagai array
-    const predictionArray = prediction.arraySync();
+    const predictionArray = await prediction.arraySync();
 
     // Kirimkan respons
     res.json({ prediction: predictionArray });
