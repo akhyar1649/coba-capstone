@@ -1,40 +1,35 @@
 const tf = require("@tensorflow/tfjs-node");
 const loadModel = require("../services/load-model");
 const { preprocessInput } = require("../services/preprocessing");
-require("dotenv").config();
 
 // Handler untuk prediksi
-async function predictForm(req, res) {
-  const model = await loadModel(process.env.MODEL_FORM);
-
+async function predictForm(req, res) {    
   try {
+    const model = await loadModel(process.env.MODEL_FORM);
     if (!model) {
-      return res.status(500).json({ error: 'Model is not loaded yet.' });
+      return res.status(500).send({ error: "Model belum dimuat" });
     }
 
-    const { input } = req.body;
+    const inputData = req.body;
 
-    // Validate input
-    if (!input || !Array.isArray(input) || input.some(row => row.length !== 9)) {
-      return res.status(400).json({
-        error: 'Invalid input. Please provide a 2D array with 9 features per sample.',
-      });
+    // Preprocessing data
+    const processedInput = preprocessInput(inputData);
+    if (!processedInput) {
+      return res.status(400).send({ error: "Invalid input data" });
     }
 
-    // Create a tensor from input
-    const inputTensor = tf.tensor2d(input);
+    // Konversi ke tensor
+    const inputTensor = tf.tensor2d([processedInput]);
 
-    // Make predictions
-    const predictions = model.predict(inputTensor);
+    // Prediksi dengan model
+    const prediction = model.predict(inputTensor);
+    const result = prediction.arraySync()[0]; // Ambil prediksi sebagai array
 
-    // Convert predictions to a readable format
-    const output = predictions.arraySync();
-
-    // Return the predictions
-    res.json({ predictions: output });
+    // Kirim hasil prediksi
+    res.json({ prediction: result });
   } catch (error) {
-    console.error('Error during prediction:', error);
-    res.status(500).json({ error: 'Failed to process prediction.' });
+    console.error(error);
+    res.status(500).send({ error: "Internal server error" });
   }
 }
 
