@@ -28,7 +28,7 @@ const predictForm = async (req, res) => {
   }
 
   try {
-    await loadModel();
+    await loadModel(process.env.MODEL_FORM);
 
     // Konversi input menjadi tensor
     const inputTensor = tf.tensor(input);
@@ -49,6 +49,7 @@ const predictForm = async (req, res) => {
 
 const predictImage = async (req, res) => {
     try {
+    await loadModel(process.env.MODEL_IMAGE);
       if (!model) {
         return res.status(500).json({ error: 'Model not loaded yet. Please try again later.' });
       }
