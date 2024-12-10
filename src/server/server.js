@@ -8,6 +8,7 @@ const db = require("../services/firebase.js");
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const host = process.env.NODE_ENV !== 'production' ? 'localhost': '0.0.0.0';
 const port = 4000;

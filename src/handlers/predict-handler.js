@@ -4,12 +4,10 @@ const tf = require("@tensorflow/tfjs-node");
 let model;
 
 // Memuat model TensorFlow.js
-const loadModel = async () => {
+const loadModel = async (path) => {
   if (!model) {
     try {
-      model = await tf.loadLayersModel(
-        "https://storage.googleapis.com/coba-capstone-model/model/model-form/model.json"
-      );
+      model = await tf.loadLayersModel(path);
       console.log("Model loaded successfully");
     } catch (error) {
       console.error("Error loading model:", error);
@@ -18,7 +16,7 @@ const loadModel = async () => {
 };
 
 // Fungsi untuk menangani prediksi
-const handlePrediction = async (req, res) => {
+const predictForm = async (req, res) => {
   const { input } = req.body;
 
   if (!Array.isArray(input) || input[0].length !== 9) {
@@ -49,4 +47,32 @@ const handlePrediction = async (req, res) => {
   }
 };
 
-module.exports = { handlePrediction };
+const predictImage = async (req, res) => {
+    try {
+      if (!model) {
+        return res.status(500).json({ error: 'Model not loaded yet. Please try again later.' });
+      }
+  
+      // Expect input data in the request body
+      const { imageData } = req.body;
+  
+      if (!imageData) {
+        return res.status(400).json({ error: 'No image data provided' });
+      }
+  
+      // Convert input data to tensor
+      const inputTensor = tf.tensor4d(imageData, [1, 150, 150, 3]);
+  
+      // Predict using the model
+      const prediction = model.predict(inputTensor);
+      const predictionResult = prediction.dataSync(); // Get prediction results as array
+  
+      // Return the prediction
+      res.json({ prediction: predictionResult[0] });
+    } catch (error) {
+      console.error('Error during prediction:', error);
+      res.status(500).json({ error: 'An error occurred during prediction' });
+    }
+  };
+
+module.exports = { predictForm, predictImage };
