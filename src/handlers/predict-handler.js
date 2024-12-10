@@ -4,7 +4,7 @@ const loadModel = require("../services/load-model");
 async function predictForm(req, res) {
   try {
     // Load model
-    const model = await loadModel(process.env.MODEL_FORM);
+    const model = await loadModel();
   } catch (error) {
     console.error("Model:", error);
     res.status(500).send({ error: "Internal server error" });
