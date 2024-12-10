@@ -1,4 +1,5 @@
 const tf = require("@tensorflow/tfjs-node");
+const sharp = require("sharp");
 
 // Simulasi model (gunakan model sebenarnya dalam aplikasi nyata)
 let model;
@@ -20,11 +21,9 @@ const predictForm = async (req, res) => {
   const { input } = req.body;
 
   if (!Array.isArray(input) || input[0].length !== 9) {
-    return res
-      .status(400)
-      .json({
-        error: "Input must be an array of arrays with 9 features each.",
-      });
+    return res.status(400).json({
+      error: "Input must be an array of arrays with 9 features each.",
+    });
   }
 
   try {
@@ -48,32 +47,46 @@ const predictForm = async (req, res) => {
 };
 
 const predictImage = async (req, res) => {
-    try {
+  try {
     await loadModel(process.env.MODEL_IMAGE);
-      if (!model) {
-        return res.status(500).json({ error: 'Model not loaded yet. Please try again later.' });
-      }
-  
-      // Expect input data in the request body
-      const { imageData } = req.body;
-  
-      if (!imageData) {
-        return res.status(400).json({ error: 'No image data provided' });
-      }
-  
-      // Convert input data to tensor
-      const inputTensor = tf.tensor4d(imageData, [1, 150, 150, 3]);
-  
-      // Predict using the model
-      const prediction = model.predict(inputTensor);
-      const predictionResult = prediction.dataSync(); // Get prediction results as array
-  
-      // Return the prediction
-      res.json({ prediction: predictionResult[0] });
-    } catch (error) {
-      console.error('Error during prediction:', error);
-      res.status(500).json({ error: 'An error occurred during prediction' });
+    if (!model) {
+      return res
+        .status(500)
+        .json({ error: "Model not loaded yet. Please try again later." });
     }
-  };
+
+    // Check if file exists
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: "No file uploaded. Please upload an image." });
+    }
+
+    // Resize and normalize image using Sharp
+    const imageBuffer = await sharp(req.file.buffer)
+      .resize(150, 150) // Resize image to 150x150
+      .toBuffer();
+
+    // Convert image buffer to tensor
+    const inputTensor = tf.tidy(() => {
+      const uint8Array = new Uint8Array(imageBuffer);
+      const tensor = tf.node.decodeImage(uint8Array, 3); // Decode to 3-channel RGB
+      return tensor.div(255.0).expandDims(0); // Normalize and add batch dimension
+    });
+
+    // Predict using the model
+    const prediction = model.predict(inputTensor);
+    const predictionResult = prediction.dataSync(); // Get prediction results as array
+
+    // Clean up tensor
+    inputTensor.dispose();
+
+    // Return the prediction
+    res.json({ prediction: predictionResult[0] });
+  } catch (error) {
+    console.error("Error during prediction:", error);
+    res.status(500).json({ error: "An error occurred during prediction" });
+  }
+};
 
 module.exports = { predictForm, predictImage };
