@@ -4,7 +4,7 @@ const loadModel = require("../services/load-model");
 async function predictForm(req, res) {
   try {
     // Load model
-    const model = await loadModel();
+    const model = loadModel();
     if (!model) {
       return res.status(500).send({ error: "Model belum dimuat" });
     }
