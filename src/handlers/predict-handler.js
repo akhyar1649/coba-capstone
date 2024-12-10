@@ -1,33 +1,35 @@
 const tf = require("@tensorflow/tfjs-node");
+const loadModel = require("../services/load-model");
+const { preprocessInput } = require("../services/preprocessing");
 
 // Handler untuk prediksi
 async function predictForm(req, res) {
-  const inputData = req.body;
-
-  // Pastikan input sesuai dengan format yang diinginkan
-  const features = [
-    inputData.age,
-    inputData.sleep_duration,
-    inputData.physical_activity_level,
-    inputData.stress_level,
-    inputData.bmi_category,
-    inputData.heart_rate,
-    inputData.daily_steps,
-    inputData.sleep_disorder,
-  ];
-
-  // Mengubah input menjadi tensor
-  const inputTensor = tfnode.tensor([features]);
-
-  // Lakukan prediksi
+  const model = await loadModel(process.env.MODEL_FORM);
   try {
-    const predictions = model.predict(inputTensor);
-    const result = predictions.arraySync();
+    if (!model) {
+      return res.status(500).send({ error: "Model belum dimuat" });
+    }
 
-    res.json({ prediction: result[0] });
+    const inputData = req.body;
+
+    // Preprocessing data
+    // const processedInput = preprocessInput(inputData);
+    // if (!processedInput) {
+    //   return res.status(400).send({ error: "Invalid input data" });
+    // }
+
+    // Konversi ke tensor
+    const inputTensor = tf.tensor2d([inputData]);
+
+    // Prediksi dengan model
+    const prediction = model.predict(inputTensor);
+    const result = prediction.arraySync()[0]; // Ambil prediksi sebagai array
+
+    // Kirim hasil prediksi
+    res.json({ prediction: result });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error predicting data");
+    res.status(500).send({ error: "Internal server error" });
   }
 }
 
