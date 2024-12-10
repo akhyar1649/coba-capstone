@@ -82,7 +82,7 @@ const predictImage = async (req, res) => {
     inputTensor.dispose();
 
     // Return the prediction
-    res.json({ prediction: predictionResult[0] });
+    res.json({ prediction: predictionResult });
   } catch (error) {
     console.error("Error during prediction:", error);
     res.status(500).json({ error: "An error occurred during prediction" });
