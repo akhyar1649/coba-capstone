@@ -9,24 +9,32 @@ async function predictForm(req, res) {
 
   try {
     if (!model) {
-      return res.status(500).send({ error: "Model is not loaded yet." });
+      return res.status(500).json({ error: 'Model is not loaded yet.' });
     }
 
-    const inputData = req.body;
-    const processedInput = preprocessInput(inputData);
+    const { input } = req.body;
 
-    if (!processedInput) {
-      return res.status(400).send({ error: "Invalid input data." });
+    // Validate input
+    if (!input || !Array.isArray(input) || input.some(row => row.length !== 9)) {
+      return res.status(400).json({
+        error: 'Invalid input. Please provide a 2D array with 9 features per sample.',
+      });
     }
 
-    const inputTensor = tf.tensor2d([processedInput]); // Bentuk [1, 9]
-    const prediction = model.predict(inputTensor);
-    const result = prediction.arraySync()[0]; // Ambil array hasil prediksi
+    // Create a tensor from input
+    const inputTensor = tf.tensor2d(input);
 
-    res.json({ prediction: result });
+    // Make predictions
+    const predictions = model.predict(inputTensor);
+
+    // Convert predictions to a readable format
+    const output = predictions.arraySync();
+
+    // Return the predictions
+    res.json({ predictions: output });
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Internal server error." });
+    console.error('Error during prediction:', error);
+    res.status(500).json({ error: 'Failed to process prediction.' });
   }
 }
 
