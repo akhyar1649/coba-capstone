@@ -2,20 +2,27 @@ const tf = require("@tensorflow/tfjs-node");
 
 // Load model di awal
 let model;
-(async () => {
-  model = await tf.loadLayersModel(
-    "https://storage.googleapis.com/coba-capstone-model/model/model-form/model.json"
-  );
-  console.log("Model loaded successfully.");
-})();
+model = tf.loadLayersModel(
+  "https://storage.googleapis.com/coba-capstone-model/model/model-form/model.json"
+);
+console.log("Model loaded successfully.");
 
 // Handler untuk prediksi
 const predictForm = async (req, res) => {
   try {
     // Validasi input
     const inputData = req.body.input; // Expect an array of arrays
-    if (!Array.isArray(inputData) || !Array.isArray(inputData[0]) || inputData[0].length !== 9) {
-        return res.status(400).json({ error: 'Invalid input format. Expected array of arrays with length 9.' });
+    if (
+      !Array.isArray(inputData) ||
+      !Array.isArray(inputData[0]) ||
+      inputData[0].length !== 9
+    ) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Invalid input format. Expected array of arrays with length 9.",
+        });
     }
 
     // Convert input ke tensor
