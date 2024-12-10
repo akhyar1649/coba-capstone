@@ -1,41 +1,35 @@
-const tf = require("@tensorflow/tfjs-node");
-const loadModel = require("../services/load-model");
+const tf = require('@tensorflow/tfjs-node');
 
-async function predictForm(req, res) {
-  try {
-    // Load model
-    const model = loadModel();
-    if (!model) {
-      return res.status(500).send({ error: "Model belum dimuat" });
+// Load model di awal
+let model;
+(async () => {
+    model = await tf.loadLayersModel("https://storage.googleapis.com/coba-capstone-model/model/model-form/model.json");
+    console.log('Model loaded successfully.');
+})();
+
+// Handler untuk prediksi
+const predictForm = async (req, res) => {
+    try {
+        // Validasi input
+        const inputData = req.body.input; // Expect an array of arrays
+        if (!Array.isArray(inputData) || !Array.isArray(inputData[0])) {
+            return res.status(400).json({ error: 'Invalid input format. Expected an array of arrays.' });
+        }
+
+        // Convert input ke tensor
+        const inputTensor = tf.tensor(inputData);
+
+        // Prediksi menggunakan model
+        const prediction = model.predict(inputTensor);
+
+        // Convert output tensor ke array
+        const output = prediction.arraySync();
+
+        res.status(200).json({ prediction: output });
+    } catch (error) {
+        console.error('Error in prediction:', error);
+        res.status(500).json({ error: 'Prediction failed.' });
     }
-    console.log("Model loaded");
-
-    // Ambil data input dari body request
-    const { inputData } = req.body;
-
-    // Ambil input shape dari model
-    const inputShape = model.inputs[0].shape.slice(1);
-    console.log("Model Input Shape:", inputShape);
-
-    // Validasi input data
-    if (!Array.isArray(inputData) || inputData.length !== inputShape[0]) {
-      return res.status(400).send({ error: "Invalid input data shape" });
-    }
-
-    // Konversi ke tensor dengan dimensi batch
-    const inputTensor = tf.tensor2d([inputData]); // Dimensi [1, inputShape[0]]
-    console.log("Input Tensor Shape:", inputTensor.shape);
-
-    // Lakukan prediksi
-    const prediction = model.predict(inputTensor);
-    const result = prediction.arraySync()[0]; // Konversi hasil prediksi ke array
-
-    // Kirim hasil prediksi ke client
-    res.json({ prediction: result });
-  } catch (error) {
-    console.error("Error during prediction:", error);
-    res.status(500).send({ error: "Internal server error" });
-  }
-}
+};
 
 module.exports = { predictForm };
