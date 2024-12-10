@@ -4,7 +4,6 @@ const authRoute = require("../routes/auth-route.js");
 const modelRoute = require("../routes/model-route.js");
 const predictRoute = require("../routes/predict-route.js");
 const db = require("../services/firebase.js");
-const loadModel = require("../services/load-model.js");
 
 const app = express();
 app.use(cors());
@@ -17,8 +16,11 @@ app.use("/auth", authRoute);
 app.use("/model", modelRoute);
 app.use("/predict", predictRoute);
 
-const model = await loadModel(process.env.MODEL_FORM);
-server.app.model = model;
+let model;
+async function loadModel() {
+    model = await tfnode.loadLayersModel(process.env.MODEL_FORM);
+    console.log("Model Loaded!");
+}
 
 app.get("/", (req, res) => {
   res.send("Rest API for SleepWell Capstone Project - Bangkit 2024");
@@ -26,4 +28,5 @@ app.get("/", (req, res) => {
 
 app.listen(port, () => {
   console.log(`Example app listening on port http://${host}:${port}`);
+  loadModel();
 });
