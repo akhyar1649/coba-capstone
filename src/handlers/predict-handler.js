@@ -55,34 +55,31 @@ const predictImage = async (req, res) => {
         .json({ error: "Model not loaded yet. Please try again later." });
     }
 
-    // Check if file exists
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ error: "No file uploaded. Please upload an image." });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // Resize and normalize image using Sharp
-    const imageBuffer = await sharp(req.file.buffer)
-      .resize(150, 150) // Resize image to 150x150
-      .toBuffer();
+    // Read the uploaded file
+    const filePath = req.file.path;
+    const imageBuffer = fs.readFileSync(filePath);
 
-    // Convert image buffer to tensor
-    const inputTensor = tf.tidy(() => {
-      const uint8Array = new Uint8Array(imageBuffer);
-      const tensor = tf.node.decodeImage(uint8Array, 3); // Decode to 3-channel RGB
-      return tensor.div(255.0).expandDims(0); // Normalize and add batch dimension
-    });
+    // Decode image and resize
+    const tensor = tf.node
+      .decodeImage(imageBuffer)
+      .resizeBilinear([150, 150]) // Resize to match model input
+      .toFloat()
+      .div(255.0) // Normalize to [0, 1]
+      .expandDims(0); // Add batch dimension
 
     // Predict using the model
-    const prediction = model.predict(inputTensor);
+    const prediction = model.predict(tensor);
     const predictionResult = prediction.dataSync(); // Get prediction results as array
 
-    // Clean up tensor
-    inputTensor.dispose();
+    // Clean up: Remove uploaded file
+    fs.unlinkSync(filePath);
 
     // Return the prediction
-    res.json({ prediction: predictionResult });
+    res.json({ prediction: predictionResult[0] });
   } catch (error) {
     console.error("Error during prediction:", error);
     res.status(500).json({ error: "An error occurred during prediction" });
