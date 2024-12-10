@@ -1,4 +1,5 @@
 const tf = require("@tensorflow/tfjs-node");
+const fs = require('fs');
 const sharp = require("sharp");
 
 // Simulasi model (gunakan model sebenarnya dalam aplikasi nyata)
