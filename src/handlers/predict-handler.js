@@ -9,23 +9,27 @@ async function predictForm(req, res) {
       return res.status(500).send({ error: "Model belum dimuat" });
     }
 
-    // Ambil data input
-    const inputData = req.body;
+    // Ambil data input dari body request
+    const { inputData } = req.body;
 
-    // Validasi data input
-    const inputShape = model.inputs[0].shape.slice(1); // Ambil shape input
+    // Ambil input shape dari model
+    const inputShape = model.inputs[0].shape.slice(1);
+    console.log("Model Input Shape:", inputShape);
+
+    // Validasi input data
     if (!Array.isArray(inputData) || inputData.length !== inputShape[0]) {
       return res.status(400).send({ error: "Invalid input data shape" });
     }
 
-    // Konversi ke tensor
-    const inputTensor = tf.tensor([inputData], [1, inputData.length]);
+    // Konversi ke tensor dengan dimensi batch
+    const inputTensor = tf.tensor2d([inputData]); // Dimensi [1, inputShape[0]]
+    console.log("Input Tensor Shape:", inputTensor.shape);
 
-    // Prediksi
+    // Lakukan prediksi
     const prediction = model.predict(inputTensor);
-    const result = prediction.arraySync()[0]; // Ambil prediksi sebagai array
+    const result = prediction.arraySync()[0]; // Konversi hasil prediksi ke array
 
-    // Kirim hasil prediksi
+    // Kirim hasil prediksi ke client
     res.json({ prediction: result });
   } catch (error) {
     console.error("Error during prediction:", error);
