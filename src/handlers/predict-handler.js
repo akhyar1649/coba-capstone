@@ -69,7 +69,6 @@ const predictImage = async (req, res) => {
       .decodeImage(imageBuffer)
       .resizeNearestNeighbor([150, 150]) // Resize to match model input
       .toFloat()
-      .div(255.0) // Normalize to [0, 1]
       .expandDims(0); // Add batch dimension
 
     // Predict using the model
