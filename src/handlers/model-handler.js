@@ -18,4 +18,4 @@ async function downloadModel(req, res) {
   }
 }
 
-module.exports = downloadModel;
+module.exports = { downloadModel };
