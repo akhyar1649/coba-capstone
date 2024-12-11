@@ -119,7 +119,7 @@ const predictImage = async (req, res) => {
 
     await historyRef.set({
       imageUrl,
-      prediction: prediction[0],
+      prediction: predictionResult[0],
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
