@@ -2,7 +2,7 @@ const admin = require("firebase-admin");
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  storageBucket: process.env.GCS_BUCKET_NAME,
+  storageBucket: "data-history-user",
 });
 const db = admin.firestore();
 const bucket = admin.storage().bucket();

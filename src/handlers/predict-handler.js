@@ -87,7 +87,7 @@ const predictImage = async (req, res) => {
 
     const imageBuffer = req.file.buffer;
     const timestamp = format(new Date(), 'yyyy-MM-dd-HH-mm-ss');
-    const imageName = `${id}-${timestamp}`;
+    const imageName = `${uid}/${id}-${timestamp}`;
 
     const tensor = tf.tidy(() => {
       return tf.node
