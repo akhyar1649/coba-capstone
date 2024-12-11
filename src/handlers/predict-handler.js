@@ -1,28 +1,14 @@
 const tf = require("@tensorflow/tfjs-node");
-const fs = require('fs');
-const sharp = require("sharp");
-
-// Simulasi model (gunakan model sebenarnya dalam aplikasi nyata)
-let model;
-
-// Memuat model TensorFlow.js
-const loadModel = async (path) => {
-  if (!model) {
-    try {
-      model = await tf.loadLayersModel(path);
-      console.log("Model loaded successfully");
-    } catch (error) {
-      console.error("Error loading model:", error);
-    }
-  }
-};
+const loadModel = require("../services/load-model");
 
 // Fungsi untuk menangani prediksi
 const predictForm = async (req, res) => {
   try {
-    await loadModel(process.env.MODEL_FORM);
+    const model = await loadModel(process.env.MODEL_FORM);
     if (!model) {
-      return res.status(500).json({ error: 'Model is not loaded yet' });
+      return res
+        .status(500)
+        .json({ error: "Model is not loaded yet. Please try again later." });
     }
 
     const {
@@ -48,78 +34,70 @@ const predictForm = async (req, res) => {
       dailySteps === undefined ||
       sleepDisorder === undefined
     ) {
-      return res.status(400).json({ error: 'Missing required input fields' });
+      return res.status(400).json({ error: "Missing required input fields" });
     }
 
-    // Preprocessing example: Map input to numerical values
     const inputData = [
-      gender === 'Male' ? 1 : 0, // Map gender to numerical values
+      gender === "Male" ? 1 : 0,
       age,
       sleepDuration,
       physicalActivityLevel,
       stressLevel,
-      bmiCategory === 'Normal Weight'
+      bmiCategory === "Normal Weight"
         ? 0
-        : bmiCategory === 'Overweight'
+        : bmiCategory === "Overweight"
         ? 1
-        : 2, // Map BMI categories
+        : 2,
       heartRate,
       dailySteps,
-      sleepDisorder === 'None'
-        ? 0
-        : sleepDisorder === 'Sleep Apnea'
-        ? 1
-        : 2, // Map sleep disorders
+      sleepDisorder === "None" ? 0 : sleepDisorder === "Sleep Apnea" ? 1 : 2,
     ];
 
-    // Predict using the model
     const inputTensor = tf.tensor2d([inputData]);
     const prediction = model.predict(inputTensor);
     const predictionArray = prediction.arraySync()[0];
 
     res.status(200).json({
+      message: "Prediction generated successfully",
       prediction: predictionArray,
-      message: 'Prediction generated successfully',
     });
   } catch (error) {
-    console.error('Error in prediction handler:', error);
-    res.status(500).json({ error: 'An error occurred during prediction' });
+    console.error("Error in prediction handler:", error);
+    res.status(500).json({ error: "An error occurred during prediction" });
   }
 };
 
 const predictImage = async (req, res) => {
   try {
-    await loadModel(process.env.MODEL_IMAGE);
+    const model = await loadModel(process.env.MODEL_IMAGE);
     if (!model) {
-      return res
-        .status(500)
-        .json({ error: "Model not loaded yet. Please try again later." });
+      return res.status(500).json({ error: "Model not loaded yet" });
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res
+        .status(400)
+        .json({ error: "No file uploaded. Please upload an image." });
     }
 
-    // Read the uploaded file
-    const filePath = req.file.path;
-    const imageBuffer = fs.readFileSync(filePath);
+    const imageBuffer = req.file.buffer;
+    const tensor = tf.tidy(() => {
+      return tf.node
+        .decodeImage(imageBuffer)
+        .resizeNearestNeighbor([150, 150])
+        .toFloat()
+        .expandDims(0);
+    });
 
-    // Decode image and resize
-    const tensor = tf.node
-      .decodeImage(imageBuffer)
-      .resizeNearestNeighbor([150, 150]) // Resize to match model input
-      .toFloat()
-      .expandDims(0); // Add batch dimension
-
-    // Predict using the model
     const prediction = model.predict(tensor);
-    const predictionResult = prediction.dataSync(); // Get prediction results as array
+    const predictionResult = prediction.dataSync();
 
-    // Clean up: Remove uploaded file
-    fs.unlinkSync(filePath);
+    tensor.dispose();
 
-    // Return the prediction
-    res.json({ prediction: predictionResult[0] });
+    res.json({
+      message: "Prediction generated successfully",
+      prediction: predictionResult[0],
+    });
   } catch (error) {
     console.error("Error during prediction:", error);
     res.status(500).json({ error: "An error occurred during prediction" });

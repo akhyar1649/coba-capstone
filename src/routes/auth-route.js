@@ -1,7 +1,7 @@
 const express = require("express");
 
 const { signup, login, getUser } = require("../handlers/auth-handler.js");
-const { authenticateToken } = require("../middleware/middleware.js");
+const authenticateToken = require("../middleware/middleware.js");
 
 const router = express.Router();
 
