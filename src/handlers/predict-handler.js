@@ -1,4 +1,5 @@
 const tf = require("@tensorflow/tfjs-node");
+const admin = require("firebase-admin");
 const { format } = require('date-fns');
 const loadModel = require("../services/load-model");
 const { db, bucket } = require("../services/firebase");
@@ -119,7 +120,7 @@ const predictImage = async (req, res) => {
     await historyRef.set({
       imageUrl,
       prediction: prediction[0],
-      createdAt: db.firestore.FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     res.json({
