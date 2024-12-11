@@ -72,6 +72,7 @@ const predictForm = async (req, res) => {
 const predictImage = async (req, res) => {
   try {
     const { uid } = req.user;
+    console.log(`User UID: ${uid}`);
     const model = await loadModel(process.env.MODEL_IMAGE);
     if (!model) {
       return res.status(500).json({ error: "Model not loaded yet" });
@@ -99,16 +100,21 @@ const predictImage = async (req, res) => {
     const predictionResult = prediction.dataSync();
 
     tensor.dispose();
+    console.log("Tensor disposed.");
 
     const file = bucket.file(imageName);
+    console.log("Uploading image to bucket...");
     await file.save(imageBuffer, { contentType: req.file.mimetype });
     const imageUrl = `https://storage.googleapis.com/${bucket.name}/${imageName}`;
+    console.log(`Image uploaded: ${imageUrl}`);
 
     const historyRef = db
       .collection('users')
       .doc(uid)
       .collection('history')
       .doc(timestamp);
+
+      console.log("Saving history to Firestore...");
 
     await historyRef.set({
       imageUrl,
