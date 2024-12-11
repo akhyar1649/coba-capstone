@@ -11,7 +11,7 @@ const {
   validateEmail,
   validatePassword,
 } = require("../services/validation-input.js");
-const generateToken = require("../services/jwt-services.js");
+const { generateToken } = require("../services/jwt-services.js");
 
 async function signup(req, res) {
   const { name: rawName, email, password } = req.body;

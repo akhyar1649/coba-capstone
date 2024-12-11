@@ -10,4 +10,4 @@ async function loadModel(path) {
   }
 }
 
-module.exports = loadModel;
+module.exports = { loadModel };

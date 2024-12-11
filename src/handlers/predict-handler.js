@@ -2,7 +2,7 @@ const tf = require("@tensorflow/tfjs-node");
 const admin = require("firebase-admin");
 const { format } = require("date-fns");
 
-const loadModel = require("../services/load-model");
+const { loadModel } = require("../services/load-model");
 const { db, bucket } = require("../services/firebase-services");
 
 async function predictForm(req, res) {
