@@ -1,7 +1,7 @@
 const express = require("express");
-const { downloadModel } = require("../handlers/model-handler.js");
-
 const router = express.Router();
+
+const { downloadModel } = require("../handlers/model-handler.js");
 
 router.get("/:fileName", downloadModel);
 

@@ -11,8 +11,7 @@ async function downloadModel(req, res) {
     const file = getFile(fileName);
     const downloadStream = file.createReadStream();
 
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-    res.downloadStream.pipe(res);
+    res.status(200).setHeader("Content-Disposition", `attachment; filename="${fileName}"`).downloadStream.pipe(res);
   } catch (error) {
     console.error("Error downloading file:", error.message);
     res.status(500).send({ message: "Error downloading file" });
