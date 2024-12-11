@@ -1,11 +1,11 @@
 const tf = require("@tensorflow/tfjs-node");
 const admin = require("firebase-admin");
-const { format } = require('date-fns');
-const loadModel = require("../services/load-model");
-const { db, bucket } = require("../services/firebase");
+const { format } = require("date-fns");
 
-// Fungsi untuk menangani prediksi
-const predictForm = async (req, res) => {
+const loadModel = require("../services/load-model");
+const { db, bucket } = require("../services/firebase-services");
+
+async function predictForm(req, res) {
   try {
     const model = await loadModel(process.env.MODEL_FORM);
     if (!model) {
@@ -46,11 +46,7 @@ const predictForm = async (req, res) => {
       sleepDuration,
       physicalActivityLevel,
       stressLevel,
-      bmiCategory === "Normal Weight"
-        ? 0
-        : bmiCategory === "Overweight"
-        ? 1
-        : 2,
+      bmiCategory === "Normal Weight" ? 0: bmiCategory === "Overweight" ? 1 : 2,
       heartRate,
       dailySteps,
       sleepDisorder === "None" ? 0 : sleepDisorder === "Sleep Apnea" ? 1 : 2,
@@ -70,10 +66,9 @@ const predictForm = async (req, res) => {
   }
 };
 
-const predictImage = async (req, res) => {
+async function predictImage(req, res) {
   try {
     const { id } = req.user;
-    console.log(`User UID: ${id}`);
     const model = await loadModel(process.env.MODEL_IMAGE);
     if (!model) {
       return res.status(500).json({ error: "Model not loaded yet" });
@@ -86,7 +81,7 @@ const predictImage = async (req, res) => {
     }
 
     const imageBuffer = req.file.buffer;
-    const timestamp = format(new Date(), 'yyyy-MM-dd-HH-mm-ss');
+    const timestamp = format(new Date(), "yyyy-MM-dd-HH-mm-ss");
     const imageName = `${id}/${id}-${timestamp}.jpg`;
 
     const tensor = tf.tidy(() => {
@@ -101,21 +96,16 @@ const predictImage = async (req, res) => {
     const predictionResult = prediction.dataSync();
 
     tensor.dispose();
-    console.log("Tensor disposed.");
 
     const file = bucket.file(imageName);
-    console.log("Uploading image to bucket...");
     await file.save(imageBuffer, { contentType: req.file.mimetype });
     const imageUrl = `https://storage.googleapis.com/${bucket.name}/${imageName}`;
-    console.log(`Image uploaded: ${imageUrl}`);
 
     const historyRef = db
-      .collection('users')
+      .collection("users")
       .doc(id)
-      .collection('history')
+      .collection("history")
       .doc(timestamp);
-
-    console.log("Saving history to Firestore...");
 
     await historyRef.set({
       imageUrl,
@@ -123,7 +113,7 @@ const predictImage = async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.json({
+    res.status(200).json({
       message: "Prediction generated successfully",
       prediction: predictionResult[0],
       imageUrl,

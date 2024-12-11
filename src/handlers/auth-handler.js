@@ -6,7 +6,7 @@ const {
   createUser,
   saveUserToFirestore,
   getUserFromFirestore,
-} = require("../services/firebase.js");
+} = require("../services/firebase-services.js");
 const {
   validateEmail,
   validatePassword,

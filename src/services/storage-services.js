@@ -2,7 +2,7 @@ require("dotenv").config();
 const { Storage } = require("@google-cloud/storage");
 
 const storage = new Storage();
-const bucketName = process.env.GCS_BUCKET_NAME;
+const bucketName = process.env.GCS_MODEL_BUCKET_NAME;
 
 async function getFileMetadata(fileName) {
   try {
