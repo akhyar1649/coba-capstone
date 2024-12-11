@@ -114,12 +114,12 @@ const predictImage = async (req, res) => {
       .collection('history')
       .doc(timestamp);
 
-      console.log("Saving history to Firestore...");
+    console.log("Saving history to Firestore...");
 
     await historyRef.set({
       imageUrl,
       prediction: prediction[0],
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: db.firestore.FieldValue.serverTimestamp(),
     });
 
     res.json({
