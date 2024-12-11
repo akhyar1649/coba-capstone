@@ -71,8 +71,8 @@ const predictForm = async (req, res) => {
 
 const predictImage = async (req, res) => {
   try {
-    const { uid } = req.user;
-    console.log(`User UID: ${uid}`);
+    const { id } = req.user;
+    console.log(`User UID: ${id}`);
     const model = await loadModel(process.env.MODEL_IMAGE);
     if (!model) {
       return res.status(500).json({ error: "Model not loaded yet" });
@@ -86,7 +86,7 @@ const predictImage = async (req, res) => {
 
     const imageBuffer = req.file.buffer;
     const timestamp = format(new Date(), 'yyyy-MM-dd-HH-mm-ss');
-    const imageName = `${uid}-${timestamp}`;
+    const imageName = `${id}-${timestamp}`;
 
     const tensor = tf.tidy(() => {
       return tf.node
@@ -110,7 +110,7 @@ const predictImage = async (req, res) => {
 
     const historyRef = db
       .collection('users')
-      .doc(uid)
+      .doc(id)
       .collection('history')
       .doc(timestamp);
 
