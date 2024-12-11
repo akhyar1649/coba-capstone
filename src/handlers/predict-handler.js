@@ -1,5 +1,7 @@
 const tf = require("@tensorflow/tfjs-node");
+const { format } = require('date-fns');
 const loadModel = require("../services/load-model");
+const { db, bucket } = require("../services/firebase");
 
 // Fungsi untuk menangani prediksi
 const predictForm = async (req, res) => {
@@ -69,6 +71,7 @@ const predictForm = async (req, res) => {
 
 const predictImage = async (req, res) => {
   try {
+    const { uid } = req.user;
     const model = await loadModel(process.env.MODEL_IMAGE);
     if (!model) {
       return res.status(500).json({ error: "Model not loaded yet" });
@@ -81,6 +84,9 @@ const predictImage = async (req, res) => {
     }
 
     const imageBuffer = req.file.buffer;
+    const timestamp = format(new Date(), 'yyyy-MM-dd-HH-mm-ss');
+    const imageName = `${uid}-${timestamp}`;
+
     const tensor = tf.tidy(() => {
       return tf.node
         .decodeImage(imageBuffer)
@@ -94,9 +100,26 @@ const predictImage = async (req, res) => {
 
     tensor.dispose();
 
+    const file = bucket.file(imageName);
+    await file.save(imageBuffer, { contentType: req.file.mimetype });
+    const imageUrl = `https://storage.googleapis.com/${bucket.name}/${imageName}`;
+
+    const historyRef = db
+      .collection('users')
+      .doc(uid)
+      .collection('history')
+      .doc(timestamp);
+
+    await historyRef.set({
+      imageUrl,
+      prediction: prediction[0],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     res.json({
       message: "Prediction generated successfully",
       prediction: predictionResult[0],
+      imageUrl,
     });
   } catch (error) {
     console.error("Error during prediction:", error);
